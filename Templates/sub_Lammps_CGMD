@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH --job-name="{Sim_Name}"
+#SBATCH --output="job.%j.%N.out"
+#SBATCH --partition=shared
+#SBATCH --nodes={Nodes}
+#SBATCH --ntasks-per-node={tpn}
+#SBATCH --export=ALL
+#SBATCH -t 48:00:00
+#SBATCH -A csd467
+
+module unload intel
+module load lammps
+cd {path}
+export OMP_NUM_THREADS=1
+
+mpirun -np {NProcs} /oasis/scratch/comet/andrewk/temp_project/Mod_Lammps/lammps-11Aug17/src/lmp_mpi < in.{Sim_Name} > log.{Sim_Name}
+

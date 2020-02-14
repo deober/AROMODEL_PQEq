@@ -1,0 +1,8 @@
+import "oplsaa.lt"
+
+{Name} inherits OPLSAA {
+ write('Data Atoms') {
+ }
+
+ write('Data Bond List') {
+ }

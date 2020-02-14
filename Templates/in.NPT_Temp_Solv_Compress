@@ -1,0 +1,45 @@
+
+# Lammps input script for equilibrating a DA melt
+
+units    real    # angstroms,kCal/mol,Daltons,Kelvin
+atom_style	 full    # select column format for Atoms section
+pair_style	 lj/cut/coul/long 15.0	 # cutoffLJ cutoff_coulomb
+bond_style	 harmonic        #parameters needed: k_bond, r0
+angle_style	 harmonic        #parameters needed: k_theta, theta0
+dihedral_style   multi/harmonic8
+special_bonds lj/coul 0 0 .5
+improper_style   cvff
+kspace_style     ewald 1e-4     # long-range electrostatics sum method
+pair_modify mix arithmetic	 #using Lorenz-Berthelot mixing rules
+read_restart {Restart_In}
+dielectric 10
+
+{Dihedral_Coeffs}
+
+timestep 1.5
+thermo 1000
+thermo_style custom step temp density etotal ke pe ebond eangle edihed eimp evdwl ecoul elong vol enthalpy
+neighbor 10.0 bin
+neigh_modify delay 0 every 100 check no page 1000000 one 100000
+
+# Declare Variables
+
+variable        volume equal "vol"
+variable        dens equal "density"
+variable        temperature equal "temp"
+variable        Enthalpy equal "enthalpy"
+run 0
+
+
+fix def1 all print 100 "${{temperature}} ${{volume}} ${{dens}} ${{Enthalpy}}" append Thermo_{Temp_In}_{Temp_Out}.txt screen no
+
+fix SH all shake 0.0001 20 0 m 1.008
+fix 0 all langevin {Temp_In} {Temp_Out} 3800 43294
+dump 1 all custom 100000 {Name}_{count}.lammpstrj id type mol x y z ix iy iz
+fix 7 all nve
+fix 10 all momentum 1000 linear 1 1 1
+run {Steps}
+
+write_data {Name}_final.data
+write_restart {Restart_Out}
+

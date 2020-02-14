@@ -1,0 +1,15 @@
+# set up two variables for Phi and Psi dihedral angles 
+main_anis: GYRATION=KAPPA2 ATOMS={conj}
+main_coord: COORDINATION GROUPA={conj} R_0=5.0 NL_CUTOFF=10.0 NL_STRIDE=100
+#
+# Activate metadynamics in phi and psi
+# depositing a Gaussian every 500 time steps,
+# with height equal to 1.2 kJoule/mol,
+# and width 0.35 rad for both CVs.
+# Well-tempered metadynamics is activated,
+# and the biasfactor is set to 6.0
+#
+metad: METAD ARG=main_anis,main_coord PACE=1000 HEIGHT=1.2 ADAPTIVE=DIFF SIGMA=10000 FILE=HILLS BIASFACTOR=6.0 TEMP=300.0
+
+# monitor the two variables and the metadynamics bias potential
+PRINT STRIDE=10 ARG=main_anis,main_coord,metad.bias FILE=COLVAR

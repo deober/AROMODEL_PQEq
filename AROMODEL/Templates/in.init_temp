@@ -1,0 +1,44 @@
+# created by CMLParser
+
+units real
+atom_style pqeq
+bond_style harmonic
+dielectric 1.0
+pair_style hybrid/overlay lj/cut 15.0 coul/pqeqgauss 0.00 12.50
+angle_style harmonic
+dihedral_style opls
+special_bonds lj 0 0 .5 coul 0 0 .5
+improper_style cvff
+kspace_style none
+read_data {System_Name}.data
+thermo_style custom step temp press ke pe etotal density
+
+{Coeffs}
+
+minimize 1.0e-4 1.0e-6 100 1000
+
+dump 1 all custom 1000 Init_{System_Name}.lammpstrj id type mol xs ys zs vx vy vz
+neighbor 10.0 bin
+neigh_modify every 1 delay 0 one 10000
+fix 0 all langevin 100. 300. 1000 43294
+fix 1 all nve/limit .1
+fix 2 all momentum 1 linear 1 1 1
+velocity all create 100.00000 1223
+timestep 1
+thermo 1000
+run 100000
+unfix 0
+unfix 1
+unfix 2
+write_restart restart.Init_{System_Name}
+
+undump 1
+timestep 1.5
+minimize 1.0e-4 1.0e-6 100 1000
+fix 3 all shake 0.0001 20 0 m 1.008
+fix 1 all nvt temp 800 800 10.0     # note the chain group
+fix 2 all momentum 1 linear 1 1 1
+
+dump 2 all custom 100000 Condense_{System_Name}.lammpstrj id type mol xs ys zs vx vy vz
+run 1000000
+write_restart restart.{System_Name}_800_1

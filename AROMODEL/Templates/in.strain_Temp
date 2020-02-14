@@ -1,0 +1,58 @@
+# Lammps input file for running a straining simulation
+
+units    real    # angstroms,kCal/mol,Daltons,Kelvin
+atom_style	 full    # select column format for Atoms section
+pair_style	 lj/cut/coul/long 10.0 8.0	 # cutoffLJ cutoff_coulomb
+bond_style	 harmonic        #parameters needed: k_bond, r0
+angle_style	 harmonic        #parameters needed: k_theta, theta0
+dihedral_style   opls
+improper_style   cvff
+kspace_style     pppm 0.0001     # long-range electrostatics sum method
+pair_modify mix arithmetic	 #using Lorenz-Berthelot mixing rules
+dielectric 1.0
+special_bonds lj/coul 0 0 .5
+
+read_restart {Restart_In}
+
+# Define Variables
+variable tmp equal "lx"
+variable L0 equal ${{tmp}}
+variable strainx equal "(lx-v_L0)/v_L0"
+variable strainy equal "(ly -v_L0)/v_L0"
+variable strainz equal "(lz -v_L0)/v_L0"
+variable stressx equal "-pxx*.000101325"
+variable stressy equal "-pyy*.000101325"
+variable stressz equal "-pzz*.000101325"
+variable LX equal "lx"
+variable LY equal "ly"
+variable LZ equal "lz"
+
+
+
+thermo_style custom step temp lx ly lz press pxx pyy pzz density etotal
+fix 1 all npt temp 300 300 100 y 0 0 1000 z 0 0 1000
+fix 2 all momentum 1 linear 1 1 1
+thermo 10
+run 100
+unfix 1
+unfix 2
+thermo 1000
+
+timestep 1.5
+fix SH all shake 0.0001 20 0 m 1.008
+
+# Strain
+fix 1 all npt temp 300 300 100 y 0 0 1000 z 0 0 1000
+fix 2 all deform 1 x vel 0.000001 remap x units box
+fix def1 all print 10 "${{LX}}  ${{LY}}  ${{LZ}}  ${{stressx}} ${{stressy}} ${{stressz}}" file SS_{index}.txt 
+dump 1 all custom 50000 DAStrain_{index}.lammpstrj id type mol x y z ix iy iz
+run 800000
+unfix 1
+unfix 2
+unfix def1
+undump 1
+
+write_restart {Restart_Out}
+
+
+

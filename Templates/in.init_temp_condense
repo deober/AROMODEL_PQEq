@@ -1,0 +1,48 @@
+# created by CMLParser
+
+units real
+atom_style full
+bond_style harmonic
+dielectric 1.0
+pair_style lj/cut/coul/long 15.0
+angle_style harmonic
+dihedral_style hybrid opls multi/harmonic8
+special_bonds lj/coul 0 0 .5
+improper_style cvff
+kspace_style ewald 1e-4
+read_data {System_Name}.data
+thermo_style custom step temp press ke pe etotal density
+
+group solvent molecule != 1
+
+minimize 1.0e-4 1.0e-6 100 1000
+
+dump 1 all custom 1000 Init_{System_Name}.lammpstrj id type mol xs ys zs vx vy vz
+neighbor 2.0 bin
+neigh_modify every 1 delay 0 one 10000
+velocity solvent create 300.00000 1223
+thermo 1000
+
+timestep 1
+
+fix 1 solvent nve/limit 0.1
+
+run 20000
+
+unfix 1
+
+undump 1
+timestep 1.0
+fix 3 solvent shake 0.0001 20 0 m 1.008
+fix 1 solvent npt temp 300.0 300.0 100.0 iso 1.0 1.0 1000.0    # note the chain group
+fix 2 solvent momentum 1 linear 1 1 1
+
+dump 2 all custom 100000 Condense_{System_Name}.lammpstrj id type mol xs ys zs
+run 1000000
+
+unfix 1
+unfix 2
+unfix 3
+
+write_restart restart.{System_Name}_Condensed
+write_data {System_Name}_Condensed.data
