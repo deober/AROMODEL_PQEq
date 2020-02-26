@@ -27,13 +27,13 @@ class System(object):
         Dihedral_Params = [[V1,V2,V3,V4]] List of floats
         Improper_Params = [[KI, AI]] List of floats
         Num_Atoms = float
-        
+
     """
 
     def __init__(self, Moltemp_List, Composition_List, Box_Size, Name):
         self.Name = Name
-        
-    
+
+
         self.Moltemp_List = Moltemp_List
         self.Atom_Params, self.Bond_Params, self.Angle_Params, self.Dihedral_Params, self.Improper_Params = Molecule.Assign_Lammps(Moltemp_List)
         self.Composition_List = Composition_List
@@ -47,7 +47,7 @@ class System(object):
         self.Temperature = 800
         self.PQEq = False
         self.Hybrid_Dih = False
-        
+
 
         return
 
@@ -91,7 +91,7 @@ class System(object):
     def Assign_PQEq(self,atomParameters):
         self.PQEq_Params = []
         for Atom_Type in atomParameters:
-            self.PQEq_Params.append(Atom.Find_PQEq_Params(Atom_Type[0]))
+            self.PQEq_Params.append(Atom.Find_PQEq_Params(Mass=Atom_Type[0]))
         self.PQEq = True
 
     def Gen_Rand(self):
@@ -102,22 +102,22 @@ class System(object):
             for j in range(self.Composition_List[i]):
                 Temp_Mol = deepcopy(Molecule_Obj)
                 #Temp_Mol = Molecule_Obj
-                
-               
+
+
                 """Temp_Mol.COM = np.asarray([random.random()*self.Box_Size, random.random()*self.Box_Size, random.random()*self.Box_Size], dtype = float)
                 Temp_Mol.Mol_ID = k
                 k += 1
                 Temp_Mol.Adjust_COM()
                 self.Molecule_List.append(Temp_Mol)"""
-                
+
                 Deposited = False
                 while not Deposited:
-                    
+
                     Temp_Mol.COM = np.asarray([random.random()*(self.Box_Size-5)+5, random.random()*(self.Box_Size-5)+5, random.random()*(self.Box_Size-5)+5], dtype = float)
                     Temp_Mol.Mol_ID = k
-                    
-                    
-                    
+
+
+
                     if len(self.Molecule_List) == 0:
                         Temp_Mol.COM = np.asarray([self.Box_Size/2.0, self.Box_Size/2.0, self.Box_Size/2.0], dtype = float)
                         Temp_Mol.Adjust_COM()
@@ -125,8 +125,8 @@ class System(object):
                         self.Molecule_List.append(Temp_Mol)
                         Deposited = True
                         k+= 1
-                    
-                
+
+
                     e = 0
                     for Mol_Obj in self.Molecule_List:
                         Distance = np.linalg.norm(Temp_Mol.COM - Mol_Obj.COM)
@@ -138,7 +138,7 @@ class System(object):
                             print Distance
                             break
 
-        
+
                     if e == len(self.Molecule_List):
                         Temp_Mol.Adjust_COM()
                         self.Molecule_List.append(Temp_Mol)
@@ -147,11 +147,11 @@ class System(object):
                         k += 1
                     else:
                         print "Didn't Deposit"
-                
-        
+
+
             i += 1
-        
-    
+
+
         Q = np.longdouble(0.0)
         Num_Atoms = 0
         for Mol_Obj in self.Molecule_List:
@@ -160,7 +160,7 @@ class System(object):
                 if Atom_Obj.Charge != 0.0:
                     Num_Atoms += 1.0
         print "The total charge of the system is ", Q
-        
+
         dQ = np.longdouble(abs(Q/Num_Atoms))
         print "dQ =", dQ
 
@@ -172,14 +172,14 @@ class System(object):
                     print(Atom_Obj.Charge)
                 if Atom_Obj.Charge > 0.0:
                     Atom_Obj.Charge -= dQ
-    
+
         for Molecule_Obj in self.Molecule_List:
             print Molecule_Obj.Mol_ID, Molecule_Obj.Name, Molecule_Obj.COM
         return
 
     def Write_LAMMPS_Data(self, Dihedral = False):
         """
-        Function for writing LAMMPS data file 
+        Function for writing LAMMPS data file
         """
         if Dihedral:
             self.Data_File = "Dihedral.data"
@@ -188,7 +188,7 @@ class System(object):
 
         File = open(self.Data_File, 'w')
         #sFile.write('LAMMPS data file via System.Write_LAMMPS_Data()\n\n')
-        
+
         # Find number of atoms, bonds, dihedrals, impropers in the system
         self.Num_Atoms = 0
         self.Num_Bonds = 0
@@ -203,8 +203,8 @@ class System(object):
             self.Num_Dihedrals += len(Moltemp_Obj.Dihedral_List)*self.Composition_List[i]
             self.Num_Impropers += len(Moltemp_Obj.Improper_List)*self.Composition_List[i]
             i += 1
-        
-        
+
+
         File.write('%d atoms\n' % self.Num_Atoms)
         File.write('%d atom types\n' % len(self.Atom_Params))
         File.write('%d bonds\n' % self.Num_Bonds)
@@ -214,7 +214,7 @@ class System(object):
         if self.Num_Dihedrals > 0:
             File.write('%d dihedrals\n' % self.Num_Dihedrals)
             File.write('%d dihedral types\n' % len(self.Dihedral_Params))
-    
+
         if self.Num_Impropers > 0:
             File.write('%d impropers\n' % self.Num_Impropers)
             File.write('%d improper types\n' % len(self.Improper_Params))
@@ -287,7 +287,7 @@ class System(object):
                 File.write('%d %d %d %.12f %.4f %.4f %.4f\n' % (Atom_Obj.System_ID, Molecule_Obj.Mol_ID, Atom_Obj.LAMMPS_Type, Atom_Obj.Charge, Atom_Obj.Position[0], Atom_Obj.Position[1], Atom_Obj.Position[2]))
                 i += 1
             j += 1
-        
+
 
         File.write('\n\nBonds\n\n')
         i = 1
@@ -325,7 +325,7 @@ class System(object):
 
     def Write_LAMMPS_Data_Imp_Only(self, Dihedral = False, Fold = -1):
         """
-        Function for writing LAMMPS data file 
+        Function for writing LAMMPS data file
         """
         if Dihedral:
             self.Data_File = "Dihedral.data"
@@ -334,7 +334,7 @@ class System(object):
 
         File = open(self.Data_File, 'w')
         File.write('LAMMPS data file via System.Write_LAMMPS_Data()\n\n')
-        
+
         # Find number of atoms, bonds, dihedrals, impropers in the system
         self.Num_Atoms = 0
         self.Num_Bonds = 0
@@ -349,8 +349,8 @@ class System(object):
             self.Num_Dihedrals += len(Moltemp_Obj.Dihedral_List)*self.Composition_List[i]
             self.Num_Impropers += len(Moltemp_Obj.Improper_List)*self.Composition_List[i]
             i += 1
-        
-        
+
+
         File.write('%d atoms\n' % self.Num_Atoms)
         File.write('%d atom types\n' % len(self.Atom_Params))
         File.write('%d bonds\n' % self.Num_Bonds)
@@ -364,7 +364,7 @@ class System(object):
         if self.Num_Dihedrals > 0:
             File.write('0 dihedrals\n')
             File.write('0 dihedral types\n')
-    
+
         if self.Num_Impropers > 0:
             File.write('%d impropers\n' % self.Num_Impropers)
             File.write('%d improper types\n' % len(self.Improper_Params))
@@ -413,7 +413,7 @@ class System(object):
                 File.write('%d %d %d %.8f %.4f %.4f %.4f\n' % (Atom_Obj.System_ID, Molecule_Obj.Mol_ID, Atom_Obj.LAMMPS_Type, Atom_Obj.Charge, Atom_Obj.Position[0], Atom_Obj.Position[1], Atom_Obj.Position[2]))
                 i += 1
             j += 1
-        
+
 
         File.write('\n\nBonds\n\n')
         i = 1
@@ -462,7 +462,7 @@ class System(object):
         MPI + GPU: 4 GPU and 24 Processors --> Only use for >100K particles
         Need to do more benchmarks with current system --> good task for CJ
         """
-        
+
         if not GPU:
             sub_temp = Configure.Template_Path + "sub_Lammps"
         else:
@@ -507,7 +507,7 @@ class System(object):
     def Run_Lammps_Init(self, Nodes = 1, GPU = False, Generate_Models = False, Minimize_Only = False, Compress = False, Condense = False, Shared = False, Implicit = False, PQEQ = False):
         cmd = "mkdir " + Configure.Comet_Path % self.Name
         subprocess.call(["ssh", Configure.Comet_Login, cmd])
-        
+
         sections = 1
 
         # Set up input file
@@ -563,7 +563,7 @@ class System(object):
             MPI + GPU: 4 GPU and 24 Processors --> Only use for >100K particles
             Need to do more benchmarks with current system --> good task for CJ
             """
-            
+
 
             if GPU:
                 sub_temp = Configure.Template_Path + "GPU_Sub"
@@ -618,7 +618,7 @@ class System(object):
     def Run_Lammps_NPT(self, GPU = False, Implicit_Solv = False, Generate_Models = False, Compress = False, Temp_Out = 0.0, time_steps = 1000000, Nodes = 1):
         """
             Function for running NPT dynamics for the system in lammps
-            
+
         """
         Temp_In = self.Temperature
         try:
@@ -628,7 +628,7 @@ class System(object):
         count += 1
         sections = 1
         if Implicit_Solv:
-            NPT_Temp = Configure.Template_Path + "in.NPT_Temp_Solv"    
+            NPT_Temp = Configure.Template_Path + "in.NPT_Temp_Solv"
         elif Generate_Models:
             if Compress:
                 NPT_Temp = Configure.Template_Path + "in.generate_models_compressed"
@@ -678,8 +678,8 @@ class System(object):
             with open(NPT_In,'w') as f:
                 f.write(s)
                 #f.insert(33, 'fix def1 all print 100 "${temperature} ${volume} ${dens} ${Enthalpy}" append Thermo_{Temp_In}_{Temp_Out}.txt screen no')
-            
-            
+
+
             if not GPU:
                 sub_temp = Configure.Template_Path + "sub_Lammps"
             else:
@@ -700,12 +700,12 @@ class System(object):
             os.system( Configure.c2c % (submit, self.Name))
             os.system( Configure.c2c % (NPT_In, self.Name))
             os.system( Configure.c2l % (self.Name, File_Out1))
-            
+
             try:
                 File = open(File_Out1,'r')
             except:
                 subprocess.call(["ssh", Configure.Comet_Login, Configure.SBATCH % (self.Name, submit)])
-            
+
             Finished = False
             i = 0
             while not Finished:
@@ -726,7 +726,7 @@ class System(object):
     def Run_Lammps_NVT(self, Old_Restart, GPU = False, Temp_Out = 0.0, time_steps = 1000000, Nodes = 1):
         """
             Function for running NPT dynamics for the system in lammps
-            
+
         """
         cmd = "mkdir " + Configure.Comet_Path % self.Name
         subprocess.call(["ssh", Configure.Comet_Login, cmd])
@@ -744,7 +744,7 @@ class System(object):
         if Temp_Out == 0.0:
             Temp_Out = Temp_In
         New_Restart = 'restart.%s_%d_%d' % (self.Name, Temp_Out, count)
-    
+
 
         with open(NVT_Temp) as f:
             template = f.read()
@@ -752,8 +752,8 @@ class System(object):
         with open(NVT_In,'w') as f:
             f.write(s)
             #f.insert(33, 'fix def1 all print 100 "${temperature} ${volume} ${dens} ${Enthalpy}" append Thermo_{Temp_In}_{Temp_Out}.txt screen no')
-        
-        
+
+
         if not GPU:
             sub_temp = Configure.Template_Path + "sub_Lammps"
         else:
@@ -775,12 +775,12 @@ class System(object):
         os.system( Configure.c2c % (NVT_In, self.Name))
         os.system( Configure.c2c % (Old_Restart, self.Name))
         os.system( Configure.c2l % (self.Name, File_Out1))
-        
+
         try:
             File = open(File_Out1,'r')
         except:
             subprocess.call(["ssh", Configure.Comet_Login, Configure.SBATCH % (self.Name, submit)])
-        
+
         Finished = False
         i = 0
         while not Finished:
@@ -804,7 +804,7 @@ class System(object):
         Strain_Temp = Configure.Template_Path + "in.strain_Temp"
         Strain_In = "in.%s_strain_%s" % (self.Name, Index)
         Sim_Name = Strain_In.split('.')[-1]
-        
+
         # Prepare input script
         with open(Strain_Temp) as f:
             Template = f.read()
@@ -853,9 +853,9 @@ class System(object):
         self.Current_Restart = File_Out
         os.system( Configure.c2l % (self.Name,  Traj_File1))
         os.system( Configure.c2l % (self.Name,  Strain_File1))
-        
-        
-        
+
+
+
         return
 
 def Run_Glass_Transition(system, Interval, Ramp_Steps = 50000, Equil_Steps = 50000, T_End = 100, Nodes = 1):
@@ -882,10 +882,3 @@ def Uniaxial_Strain(system, Restart_In, steps = 20):
         Restart_In_Temp = Restart_Out
 
     return
-
-
-
-
-
-
-
