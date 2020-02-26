@@ -1,5 +1,5 @@
 #! usr/bin/python
-
+import Atom
 import Molecule
 import random
 import numpy as np
@@ -90,7 +90,7 @@ class System(object):
     def Assign_PQEq(self,atomParameters):
         self.PQEq_Params = []
         for Atom_Type in atomParameters:
-            self.PQEq_Params.append(Atom.Find_PQEq_Params(Atom_Type[0]))
+            self.PQEq_Params.append(Atom.Find_PQEq_Params(Mass=Atom_Type[0]))
         self.PQEq = True
 
     def Gen_Rand(self):
