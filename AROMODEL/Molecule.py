@@ -58,8 +58,8 @@ class Molecule(object):
         if File_Name.split('/')[-1].split('.')[-1] != 'data' and File_Name.split('/')[-1].split('.')[0] != 'data':
             self.N = int(File_Lines[0].strip('\n')) # Integer
             self.Atom_List = np.empty(self.N, dtype=object) # Numpy object array
-            print "Setting up molecule"
-            print "Molecule Name:", self.Name
+            print("Setting up molecule")
+            print("Molecule Name:", self.Name)
             print self.N, "Atoms in ", self.Name
             print "----------------------------------"
             for i in range(self.N):
@@ -481,7 +481,7 @@ class Molecule(object):
                 try:
                     File = open(File_Out,'r')
                 except:
-                    os.system('/Users/andrewkleinschmidt/Library/Orca/orca %s > %s' %(File_Name, File_Out)) # Run Orca Job
+                    os.system('/usr/bin/orca %s > %s' %(File_Name, File_Out)) # Run Orca Job
             
             
             else:

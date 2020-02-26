@@ -71,3 +71,8 @@ def Write_LAMMPS_Single_Point_Energy_No_Nonbonded(File_Name,Data_File,Name,Coul_
 
 def Write_LAMMPS_Test_Condensed():
 	return
+
+
+def Write_LAMMPS_PQEq(File_Name,Data_File,Name):
+	f = open(File_Name,'w')
+	f.write('uits \t\treal\natom_style\tpqeq\nboundary\tp p p\n#dielectric\t1\nspecial_bonds\tlj 1e-08 1e-08 1.00000 coul 1e-08 1e-08 1.00000\npair_style\thybrid/overlay coul/pqeqgauss 0.00 12.50 lj/gromacs 13 14.00000\n')

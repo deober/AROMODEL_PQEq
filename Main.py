@@ -6,24 +6,38 @@ import sys
 import DA_Polymer
 import math
 
+#Modify and run this script to generate a lammps data file and control file
+#Molecule class accepts .xyz or Lammps single molecule data files
+#System combines molecule data files into a single data file describing the full system of solvents and solutes
+
 
 def main():
-    """Script, File_Name, N = sys.argv
-    N = int(N)
-    print File_Name
-    Name = File_Name.split('.')[0] + "_%s" % N"""
-    Solvent = Molecule.Molecule(File_Name)
-    Solvent.Scan_Dihedrals([4,5,10,11],local = True)
-    Solvent.UnConverged = True
-    Solvent.Set_Up_FF(run_orca=True, local = False)
-    OPLS.Assign_OPLS(Solvent, ChelpG = False)
-    Solvent_System = System.System([Solvent], [N], 200.0, Name)
-    Solvent_System.Gen_Rand()
-    Solvent_System.Write_LAMMPS_Data()
-    """Solvent_System.Run_Lammps_Init()
-    Solvent_System.Run_Lammps_NPT""
-    
+
+    #thisScript is junk, just necessary for unpacking the system argument vector (sys.argv)
+    #outputFilenames is a general simulation name that will be appended as in.<outputFilename> and dat.<outputFilename>
+
+    soluteFilename = '/home/derick/SimSandbox/Projects/PQEq/PDTSTPD/PDTSTPD_dimer.data'
+    nSoluteMolecules = 1
+    solventFilename = '/home/derick/SimSandbox/Projects/PQEq/PDTSTPD/noSolvent.dat'
+    nSolventMolecules = 0   
+
+    systemPrefix = 'PDTSTPD-PQEq-test'
+    systemName = '%s_%s%d_%s%d' % (systemPrefix,soluteFilename.split('/')[-1].split('.')[0],int(nSoluteMolecules),solventFilename.split('/')[-1].split('.')[0],int(nSolventMolecules)) 
+
+
+    nSoluteMolecules = int(nSoluteMolecules)
+    nSolventMolecules = int(nSolventMolecules)
+    dataName = '%s.data' % (systemName)
+    print(systemName)
+    inputName = 'in.%s' % (systemName)
+    print('file names will be %s and %s' % (inputName,dataName))
+
+    solute = Molecule.Molecule(soluteFilename)
+    solute.UnConverged = True
+    solute.Set_Up_FF(run_orca=True,local=True)
+
+    fullSystem = System.System([solute],[nSoluteMolecules],Box_Size=20,Name=systemPrefix)
+    fullSystem.Assign_PQEq()
+    fullSystem.Write_LAMMPS_PQEq(inputName,dataName,systemPrefix,300,fullSystem,)
 
 if __name__=='__main__': main()
-
-
