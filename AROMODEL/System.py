@@ -87,9 +87,9 @@ class System(object):
                 Mol_ID += 1
                 self.Molecule_List.append(Temp_Mol)
 
-    def Assign_PQEq(self):
+    def Assign_PQEq(self,atomParameters):
         self.PQEq_Params = []
-        for Atom_Type in Atom_Params:
+        for Atom_Type in atomParameters:
             self.PQEq_Params.append(Atom.Find_PQEq_Params(Atom_Type[0]))
         self.PQEq = True
 
