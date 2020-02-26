@@ -37,7 +37,7 @@ def main():
     solute.Set_Up_FF(run_orca=True,local=True)
 
     fullSystem = System.System([solute],[nSoluteMolecules],Box_Size=20,Name=systemPrefix)
-    fullSystem.Assign_PQEq()
+    fullSystem.Assign_PQEq(atomParameters=fullSystem.Atom_Params)
     fullSystem.Write_LAMMPS_PQEq(inputName,dataName,systemPrefix,300,fullSystem,)
 
 if __name__=='__main__': main()
