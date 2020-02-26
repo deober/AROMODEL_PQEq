@@ -1,5 +1,6 @@
 #! usr/bin/python
 
+import Atom
 import Molecule
 import random
 import numpy as np
