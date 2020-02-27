@@ -272,20 +272,21 @@ def Find_OPLS_ID(Molecule,Atom, Fullerene):
 
     return Fullerene
 
-def Find_PQEq_Params(self,Mass):
+def Find_PQEq_Params(Mass):
     #Assigns atomic PQEq parameters based on parameter file data
+    #used to include self as argument
     Element = Reverse_Dict[Mass]
     f = open('pqeq.par','r')
     lines = f.readlines()
     for line in lines:
-        if line.strip().split(' ')[0] == Element:
-            PQEq_P = float(line.strip().split(' ')[1])
-            PQEq_X0 = float(line.strip().split(' ')[2])
-            PQEq_J0 = float(line.strip().split(' ')[3])
-            PQEq_Z = float(line.strip().split(' ')[4])
-            PQEq_Rc = float(line.strip().split(' ')[5])
-            PQEq_Rs = float(line.strip().split(' ')[6])
-            PQEq_Ks = float(line.strip().split(' ')[7])
+        if line.strip().split()[0] == Element:
+            PQEq_P = float(line.strip().split()[1])
+            PQEq_X0 = float(line.strip().split()[2])
+            PQEq_J0 = float(line.strip().split()[3])
+            PQEq_Z = float(line.strip().split()[4])
+            PQEq_Rc = float(line.strip().split()[5])
+            PQEq_Rs = float(line.strip().split()[6])
+            PQEq_Ks = float(line.strip().split()[7])
     if PQEQ_X0 == null:
         raise ValueError('OPLS Parameter Not Found')
     return [PQEq_X0,PQEq_J0,PQEq_Rc,PQEq_P,PQEq_Z,PQEq_Rs,PQEq_Ks]
